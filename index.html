@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        #markdown-output {
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fff;
+            margin-top: 20px;
+            overflow: auto;
+        }
+        #loading {
+            display: none;
+            font-weight: bold;
+            color: #007BFF;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+</head>
+<body>
+
+<h1>Markdown to HTML Converter</h1>
+<div id="loading">Processing...</div>
+<div id="markdown-output"></div>
+
+<h2>Upload Your Markdown File</h2>
+<input type="file" id="file-input" accept=".md">
+<button id="convert-button">Convert</button>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const output = document.getElementById("markdown-output");
+        const loading = document.getElementById("loading");
+        const fileInput = document.getElementById("file-input");
+        const convertButton = document.getElementById("convert-button");
+
+        function renderMarkdown(content) {
+            output.innerHTML = marked(content);
+            // Highlight code blocks
+            hljs.highlightAll();
+        }
+
+        function handleError(error) {
+            output.innerHTML = "<p>Error processing file: " + error.message + "</p>";
+        }
+
+        function loadMarkdownFile(filename) {
+            loading.style.display = "block";
+            fetch(filename)
+                .then(response => {
+                    if (!response.ok) throw new Error("Network response was not ok");
+                    return response.text();
+                })
+                .then(content => {
+                    renderMarkdown(content);
+                    loading.style.display = "none";
+                })
+                .catch(handleError);
+        }
+
+        // Load the default markdown file on page load
+        loadMarkdownFile('input.md');
+
+        // Handle file upload
+        convertButton.addEventListener("click", function() {
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    renderMarkdown(event.target.result);
+                };
+                reader.onerror = function(event) {
+                    handleError(new Error("File could not be read!"));
+                };
+                reader.readAsText(file);
+            } else {
+                alert("Please select a markdown file to upload.");
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
